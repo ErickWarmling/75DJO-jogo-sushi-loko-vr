@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 78ede28ce737e2747966f62e5fd1094b
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/WorldGridMaterial.shader
+  uploadId: 717517

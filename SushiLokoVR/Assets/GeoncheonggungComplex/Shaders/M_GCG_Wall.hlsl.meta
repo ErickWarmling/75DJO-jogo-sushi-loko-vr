@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 406a57ed2d283bb45b1e42353461cc93
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_Wall.hlsl
+  uploadId: 717517

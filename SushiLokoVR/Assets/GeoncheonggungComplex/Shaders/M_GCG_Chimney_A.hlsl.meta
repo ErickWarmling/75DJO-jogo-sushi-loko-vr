@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6069bf71519693a47a43eb41171da62c
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_Chimney_A.hlsl
+  uploadId: 717517

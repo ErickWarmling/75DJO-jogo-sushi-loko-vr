@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: abc00000000015538595472538682045
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Materials/Buildings/M_GCG_BottomWall.mat
+  uploadId: 717517

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: abc00000000003521812639514911969
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_Stone.shader
+  uploadId: 717517

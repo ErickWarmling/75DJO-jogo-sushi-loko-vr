@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e937738d1ae77124d8bcfb5e60062d4e
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_RoofTile_A.hlsl
+  uploadId: 717517

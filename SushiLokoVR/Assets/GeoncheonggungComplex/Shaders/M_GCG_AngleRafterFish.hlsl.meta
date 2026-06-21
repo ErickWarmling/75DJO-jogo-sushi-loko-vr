@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c59212a497b38ef4f88cb7a8eca42875
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_AngleRafterFish.hlsl
+  uploadId: 717517

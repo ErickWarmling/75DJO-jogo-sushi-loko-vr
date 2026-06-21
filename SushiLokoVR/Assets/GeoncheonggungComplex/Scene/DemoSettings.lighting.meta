@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 128f4d2faa36d064698947948fd9270d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4890085278179872738
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Scene/DemoSettings.lighting
+  uploadId: 717517

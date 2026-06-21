@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 80bd2e714768cfa4f8a29f8fd43d6377
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_RoofLine.hlsl
+  uploadId: 717517

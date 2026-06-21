@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: cfdb56a09ce9668429c6edea8406cfa7
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_Signboard_A.hlsl
+  uploadId: 717517

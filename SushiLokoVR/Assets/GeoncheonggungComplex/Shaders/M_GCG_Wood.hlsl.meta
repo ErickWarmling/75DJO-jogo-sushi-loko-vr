@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9349e1d7891c71b4da3af6b8b61b2fe3
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_Wood.hlsl
+  uploadId: 717517

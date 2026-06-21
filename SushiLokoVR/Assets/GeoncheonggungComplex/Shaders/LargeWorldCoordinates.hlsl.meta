@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a44e22b8bee0324468c8576b2fad2404
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/LargeWorldCoordinates.hlsl
+  uploadId: 717517

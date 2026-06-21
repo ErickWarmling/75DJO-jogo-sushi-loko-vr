@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1008880399d330d47b0fc4a661b92e85
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305374
+  packageName: KHS - Geoncheonggung, Gyeongbokgung
+  packageVersion: 1.0
+  assetPath: Assets/GeoncheonggungComplex/Shaders/M_GCG_Fencestone.hlsl
+  uploadId: 717517
