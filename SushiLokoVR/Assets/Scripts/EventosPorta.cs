@@ -13,20 +13,24 @@ public class EventosPorta : MonoBehaviour
  void Update()
  {
  float angle = hinge.angle;
+ Debug.Log("Angulo da porta: " + angle);
 
- // abriu
- if (!isOpen && angle == -120)
+ // abriu (porta passou de 30 graus de abertura)
+ if (!isOpen && angle <= -30)
  {
  isOpen = true;
- teleporte.enabled = true;
+ if (teleporte != null)
+  teleporte.enabled = true;
+ else
+  Debug.LogError("EventosPorta: campo 'teleporte' nao esta atribuido no Inspector!");
  } else
  {
- // Porta fechou
- // por causa da precisao do float, tive que testar com 1 grau a menos
- if (isOpen && angle > -119)
+ // Porta fechou (voltou para perto de 0)
+ if (isOpen && angle > -10)
  {
  isOpen = false;
- teleporte.enabled = false;
+ if (teleporte != null)
+  teleporte.enabled = false;
  }
  }
  }

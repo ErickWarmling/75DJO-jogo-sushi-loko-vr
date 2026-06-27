@@ -2,11 +2,6 @@ using UnityEngine;
 
 public class GerenciadorSomAmbiente : MonoBehaviour
 {
-    [Header("Referências")]
-    public Transform playerCamera;
-    public float maxDistance = 5f;
-    public LayerMask layerChao;
-
     [Header("Chãos das Áreas")]
     public GameObject chaoRecepcao;
     public GameObject chaoCozinha;
@@ -18,43 +13,89 @@ public class GerenciadorSomAmbiente : MonoBehaviour
     public AudioSource somAreaExterna;
 
     private AudioSource somAtual;
-    private Collider colliderRecepcao;
-    private Collider colliderCozinha;
-    private Collider colliderAreaExterna;
+    private Transform camTransform;
+
+    // Bounds XZ de cada chão (estáticos — objetos não se movem)
+    private Bounds boundsRecepcao;
+    private Bounds boundsCozinha;
+    private Bounds boundsAreaExterna;
+
+    // Centros dos chãos usados como fallback Voronoi nas transições
+    private Vector3 posRecepcao;
+    private Vector3 posCozinha;
+    private Vector3 posAreaExterna;
 
     void Start()
     {
-        colliderRecepcao  = chaoRecepcao.GetComponent<Collider>();
-        colliderCozinha   = chaoCozinha.GetComponent<Collider>();
-        colliderAreaExterna = chaoAreaExterna.GetComponent<Collider>();
+        // Camera.main é a câmera VR real (rastreia a cabeça).
+        // O campo playerCamera que existia antes apontava para o Camera Offset,
+        // que não se atualiza com head-tracking nem com locomoção sem teleporte.
+        camTransform = Camera.main.transform;
+
+        boundsRecepcao    = chaoRecepcao.GetComponent<Collider>().bounds;
+        boundsCozinha     = chaoCozinha.GetComponent<Collider>().bounds;
+        boundsAreaExterna = chaoAreaExterna.GetComponent<Collider>().bounds;
+
+        posRecepcao    = chaoRecepcao.transform.position;
+        posCozinha     = chaoCozinha.transform.position;
+        posAreaExterna = chaoAreaExterna.transform.position;
 
         TrocarSom(somRecepcao);
     }
 
     void Update()
     {
-        Ray ray = new Ray(playerCamera.position, Vector3.down);
-        if (!Physics.Raycast(ray, out RaycastHit hit, maxDistance, layerChao))
-            return;
+        Vector3 pos = camTransform.position;
 
-        AudioSource novoSom = null;
+        bool inRecepcao    = IsInBoundsXZ(pos, boundsRecepcao);
+        bool inCozinha     = IsInBoundsXZ(pos, boundsCozinha);
+        bool inAreaExterna = IsInBoundsXZ(pos, boundsAreaExterna);
 
-        if (hit.collider == colliderRecepcao)
-            novoSom = somRecepcao;
-        else if (hit.collider == colliderCozinha)
-            novoSom = somCozinha;
-        else if (hit.collider == colliderAreaExterna)
-            novoSom = somAreaExterna;
+        int inCount = (inRecepcao ? 1 : 0) + (inCozinha ? 1 : 0) + (inAreaExterna ? 1 : 0);
+
+        AudioSource novoSom;
+
+        if (inCount == 1)
+        {
+            // Dentro de exatamente uma zona: decisão direta
+            if (inRecepcao)    novoSom = somRecepcao;
+            else if (inCozinha) novoSom = somCozinha;
+            else               novoSom = somAreaExterna;
+        }
+        else
+        {
+            // Fora de todas as zonas ou em sobreposição de bordas:
+            // usa Voronoi (centro mais próximo) como fallback
+            float dR = SqrDistXZ(pos, posRecepcao);
+            float dC = SqrDistXZ(pos, posCozinha);
+            float dE = SqrDistXZ(pos, posAreaExterna);
+
+            if (dR <= dC && dR <= dE)  novoSom = somRecepcao;
+            else if (dC <= dE)         novoSom = somCozinha;
+            else                       novoSom = somAreaExterna;
+        }
 
         if (novoSom != null && novoSom != somAtual)
             TrocarSom(novoSom);
+    }
+
+    bool IsInBoundsXZ(Vector3 point, Bounds bounds)
+    {
+        return point.x >= bounds.min.x && point.x <= bounds.max.x &&
+               point.z >= bounds.min.z && point.z <= bounds.max.z;
+    }
+
+    float SqrDistXZ(Vector3 a, Vector3 b)
+    {
+        float dx = a.x - b.x;
+        float dz = a.z - b.z;
+        return dx * dx + dz * dz;
     }
 
     void TrocarSom(AudioSource novoSom)
     {
         if (somAtual != null && somAtual.isPlaying)
             somAtual.Stop();
-
         somAtual = novoSom;
         somAtual.Play();
     }
