@@ -7,6 +7,7 @@ public class FogaoController : MonoBehaviour
     [SerializeField] private GameObject indicadorBocaLigada;
 
     private bool ligado = false;
+    public bool EstaLigado => ligado;
 
     void Awake()
     {
