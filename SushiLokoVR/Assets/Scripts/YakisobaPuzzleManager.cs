@@ -9,20 +9,39 @@ public class YakisobaPuzzleManager : MonoBehaviour
     private const string BowlYakisobaName = "BowlYakisoba";
     private const string DoorName = "DoorV6 (1)";
     private const string BotaoFogaoName = "Push Button Fogao";
+    private const string VisualPanelaInicialName = "YakisobaPanelaInicial";
+    private const string VisualPanelaComBrocolisName = "YakisobaPanelaComBrocolis";
+    private const string VisualBowlFinalName = "YakisobaBowlFinal";
 
+    [Header("Regras do puzzle")]
     [SerializeField] private float anguloDerramar = 100f;
     [SerializeField] private float tempoCozimento = 10f;
     [SerializeField] private float raioZonaPanela = 0.22f;
     [SerializeField] private float raioZonaBowl = 0.22f;
 
+    [Header("Visuais editaveis")]
+    [SerializeField] private GameObject yakisobaPanelaInicial;
+    [SerializeField] private GameObject yakisobaPanelaComBrocolis;
+    [SerializeField] private GameObject yakisobaBowlFinal;
+    [SerializeField] private bool criarVisualPadraoSeNaoConfigurar = true;
+
+    [Header("Fallback visual gerado por codigo")]
+    [SerializeField] private float alturaConteudoPanela = 0.09f;
+    [SerializeField] private float alturaConteudoBowl = 0.08f;
+
     private GameObject bowlBrocolis;
     private GameObject panela;
     private GameObject bowlYakisoba;
     private GameObject porta;
+    private GameObject conteudoPanela;
+    private GameObject brocolisNaPanelaVisual;
+    private GameObject conteudoBowlYakisoba;
 
     private Outline outlineBowlBrocolis;
     private Outline outlinePanela;
     private Outline outlinePorta;
+    private Material materialCaldo;
+    private Material materialMacarrao;
     private FogaoController fogao;
     private XRGrabInteractable grabBowlBrocolis;
     private XRGrabInteractable grabPanela;
@@ -67,6 +86,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
         outlineBowlBrocolis = PrepararOutline(bowlBrocolis, new Color(0.1f, 1f, 0.25f, 1f));
         outlinePanela = PrepararOutline(panela, new Color(0f, 0.75f, 1f, 1f));
         outlinePorta = PrepararOutline(porta, new Color(1f, 0.75f, 0.05f, 1f));
+        ConfigurarConteudosVisuais();
 
         grabBowlBrocolis = bowlBrocolis.GetComponent<XRGrabInteractable>();
         grabPanela = panela.GetComponent<XRGrabInteractable>();
@@ -143,6 +163,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
         brocolisNaPanela = true;
         SetOutline(outlineBowlBrocolis, 0f);
         EsconderConteudoBrocolis();
+        MostrarBrocolisNaPanela();
         Debug.Log("Brocolis derramado na PanelaYakisoba.");
     }
 
@@ -153,8 +174,217 @@ public class YakisobaPuzzleManager : MonoBehaviour
 
         puzzleCompleto = true;
         SetOutline(outlinePanela, 0f);
+        TransferirConteudoParaBowlYakisoba();
         DestravarPorta();
         Debug.Log("Yakisoba pronto. DoorV6 (1) destrancada.");
+    }
+
+    private void ConfigurarConteudosVisuais()
+    {
+        yakisobaPanelaInicial = ResolverVisualEditavel(yakisobaPanelaInicial, VisualPanelaInicialName);
+        yakisobaPanelaComBrocolis = ResolverVisualEditavel(yakisobaPanelaComBrocolis, VisualPanelaComBrocolisName);
+        yakisobaBowlFinal = ResolverVisualEditavel(yakisobaBowlFinal, VisualBowlFinalName);
+
+        bool temVisualEditavel = yakisobaPanelaInicial != null
+            || yakisobaPanelaComBrocolis != null
+            || yakisobaBowlFinal != null;
+
+        if (!temVisualEditavel && criarVisualPadraoSeNaoConfigurar)
+        {
+            CriarConteudosVisuaisPadrao();
+            return;
+        }
+
+        SetActiveSeExiste(yakisobaPanelaInicial, true);
+        SetActiveSeExiste(yakisobaPanelaComBrocolis, false);
+        SetActiveSeExiste(yakisobaBowlFinal, false);
+    }
+
+    private GameObject ResolverVisualEditavel(GameObject visual, string nomePadrao)
+    {
+        if (visual != null)
+            return visual;
+
+        return BuscarObjetoNaCenaPorNome(nomePadrao);
+    }
+
+    private GameObject BuscarObjetoNaCenaPorNome(string nome)
+    {
+        foreach (var raiz in SceneManager.GetActiveScene().GetRootGameObjects())
+        {
+            foreach (var transformEncontrado in raiz.GetComponentsInChildren<Transform>(true))
+            {
+                if (transformEncontrado.name == nome)
+                    return transformEncontrado.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private void SetActiveSeExiste(GameObject obj, bool ativo)
+    {
+        if (obj != null)
+            obj.SetActive(ativo);
+    }
+
+    private void CriarConteudosVisuaisPadrao()
+    {
+        materialCaldo = CriarMaterial("MaterialCaldoYakisoba", new Color(0.92f, 0.48f, 0.16f, 0.95f));
+        materialMacarrao = CriarMaterial("MaterialMacarraoYakisoba", new Color(1f, 0.82f, 0.42f, 1f));
+
+        conteudoPanela = CriarGrupoConteudo(panela.transform, "ConteudoVisualPanelaYakisoba");
+        CriarCaldo(conteudoPanela.transform, "CaldoPanela", alturaConteudoPanela, 0.2f);
+        CriarMacarrao(conteudoPanela.transform, alturaConteudoPanela + 0.01f, 0.2f);
+
+        brocolisNaPanelaVisual = new GameObject("BrocolisVisualPanela");
+        brocolisNaPanelaVisual.transform.SetParent(conteudoPanela.transform, false);
+        CriarClonesBrocolis(brocolisNaPanelaVisual.transform, alturaConteudoPanela + 0.025f);
+        brocolisNaPanelaVisual.SetActive(false);
+
+        conteudoBowlYakisoba = CriarGrupoConteudo(bowlYakisoba.transform, "ConteudoVisualBowlYakisoba");
+        CriarCaldo(conteudoBowlYakisoba.transform, "CaldoBowlYakisoba", alturaConteudoBowl, 0.18f);
+        CriarMacarrao(conteudoBowlYakisoba.transform, alturaConteudoBowl + 0.01f, 0.18f);
+        CriarClonesBrocolis(conteudoBowlYakisoba.transform, alturaConteudoBowl + 0.025f);
+        conteudoBowlYakisoba.SetActive(false);
+    }
+
+    private GameObject CriarGrupoConteudo(Transform pai, string nome)
+    {
+        var grupo = new GameObject(nome);
+        grupo.transform.SetParent(pai, false);
+        grupo.transform.localPosition = Vector3.zero;
+        grupo.transform.localRotation = Quaternion.identity;
+        grupo.transform.localScale = Vector3.one;
+        return grupo;
+    }
+
+    private Material CriarMaterial(string nome, Color cor)
+    {
+        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null)
+            shader = Shader.Find("Standard");
+
+        var material = new Material(shader);
+        material.name = nome;
+        material.color = cor;
+        return material;
+    }
+
+    private void CriarCaldo(Transform pai, string nome, float altura, float raio)
+    {
+        var caldo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        caldo.name = nome;
+        caldo.transform.SetParent(pai, false);
+        caldo.transform.localPosition = Vector3.up * altura;
+        caldo.transform.localRotation = Quaternion.identity;
+        caldo.transform.localScale = new Vector3(raio, 0.01f, raio);
+
+        var collider = caldo.GetComponent<Collider>();
+        if (collider != null)
+            Destroy(collider);
+
+        caldo.GetComponent<Renderer>().material = materialCaldo;
+    }
+
+    private void CriarMacarrao(Transform pai, float altura, float raio)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            var fio = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            fio.name = "MacarraoVisual";
+            fio.transform.SetParent(pai, false);
+
+            float angulo = i * 60f;
+            float distancia = i % 2 == 0 ? raio * 0.22f : raio * 0.42f;
+            fio.transform.localPosition = new Vector3(
+                Mathf.Cos(angulo * Mathf.Deg2Rad) * distancia,
+                altura,
+                Mathf.Sin(angulo * Mathf.Deg2Rad) * distancia);
+            fio.transform.localRotation = Quaternion.Euler(0f, angulo + 20f, 0f);
+            fio.transform.localScale = new Vector3(raio * 0.55f, 0.006f, raio * 0.04f);
+
+            var collider = fio.GetComponent<Collider>();
+            if (collider != null)
+                Destroy(collider);
+
+            fio.GetComponent<Renderer>().material = materialMacarrao;
+        }
+    }
+
+    private void CriarClonesBrocolis(Transform pai, float altura)
+    {
+        Transform grupoBrocolis = EncontrarFilhoPorNome(bowlBrocolis.transform, "Brocolis");
+        if (grupoBrocolis == null)
+            return;
+
+        int index = 0;
+        foreach (Transform filho in grupoBrocolis)
+        {
+            var clone = Instantiate(filho.gameObject, pai);
+            clone.name = filho.name + "_visual";
+            clone.transform.localPosition = PosicaoBrocolisVisual(index, altura);
+            clone.transform.localRotation = Quaternion.Euler(0f, index * 73f, 0f);
+            clone.transform.localScale = filho.localScale;
+            RemoverComponentesInterativos(clone);
+            index++;
+        }
+    }
+
+    private Vector3 PosicaoBrocolisVisual(int index, float altura)
+    {
+        Vector2[] posicoes =
+        {
+            new Vector2(-0.045f, 0.025f),
+            new Vector2(0.04f, 0.035f),
+            new Vector2(-0.01f, -0.035f),
+            new Vector2(0.055f, -0.025f),
+            new Vector2(-0.055f, -0.01f)
+        };
+
+        Vector2 posicao = posicoes[index % posicoes.Length];
+        return new Vector3(posicao.x, altura, posicao.y);
+    }
+
+    private void RemoverComponentesInterativos(GameObject obj)
+    {
+        foreach (var collider in obj.GetComponentsInChildren<Collider>(true))
+            Destroy(collider);
+
+        foreach (var rigidbody in obj.GetComponentsInChildren<Rigidbody>(true))
+            Destroy(rigidbody);
+
+        foreach (var interactable in obj.GetComponentsInChildren<XRBaseInteractable>(true))
+            Destroy(interactable);
+
+        foreach (var outline in obj.GetComponentsInChildren<Outline>(true))
+            Destroy(outline);
+    }
+
+    private void MostrarBrocolisNaPanela()
+    {
+        if (yakisobaPanelaComBrocolis != null)
+        {
+            SetActiveSeExiste(yakisobaPanelaInicial, false);
+            yakisobaPanelaComBrocolis.SetActive(true);
+            return;
+        }
+
+        if (brocolisNaPanelaVisual != null)
+            brocolisNaPanelaVisual.SetActive(true);
+    }
+
+    private void TransferirConteudoParaBowlYakisoba()
+    {
+        SetActiveSeExiste(yakisobaPanelaInicial, false);
+        SetActiveSeExiste(yakisobaPanelaComBrocolis, false);
+        SetActiveSeExiste(yakisobaBowlFinal, true);
+
+        if (conteudoPanela != null)
+            conteudoPanela.SetActive(false);
+
+        if (conteudoBowlYakisoba != null && yakisobaBowlFinal == null)
+            conteudoBowlYakisoba.SetActive(true);
     }
 
     private void EsconderConteudoBrocolis()
