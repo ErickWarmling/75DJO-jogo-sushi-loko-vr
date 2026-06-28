@@ -21,6 +21,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
     private GameObject porta;
 
     private Outline outlineBowlBrocolis;
+    private Outline outlinePanela;
     private Outline outlinePorta;
     private FogaoController fogao;
     private XRGrabInteractable grabBowlBrocolis;
@@ -64,6 +65,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
             return;
 
         outlineBowlBrocolis = PrepararOutline(bowlBrocolis, new Color(0.1f, 1f, 0.25f, 1f));
+        outlinePanela = PrepararOutline(panela, new Color(0f, 0.75f, 1f, 1f));
         outlinePorta = PrepararOutline(porta, new Color(1f, 0.75f, 0.05f, 1f));
 
         grabBowlBrocolis = bowlBrocolis.GetComponent<XRGrabInteractable>();
@@ -78,7 +80,10 @@ public class YakisobaPuzzleManager : MonoBehaviour
             grabPanela.selectEntered.AddListener(_ =>
             {
                 if (yakisobaCozido)
+                {
                     pegouPanelaCozida = true;
+                    SetOutline(outlinePanela, 0f);
+                }
             });
 
         TravarPorta();
@@ -95,6 +100,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
         if (tempoLigadoComIngrediente >= tempoCozimento)
         {
             yakisobaCozido = true;
+            SetOutline(outlinePanela, 5f);
             Debug.Log("Yakisoba cozido. Agora derrame a panela no BowlYakisoba.");
         }
     }
@@ -103,12 +109,18 @@ public class YakisobaPuzzleManager : MonoBehaviour
     {
         if (zona == ZonaPuzzle.Panela && pegouBrocolis && !brocolisNaPanela)
             SetOutline(outlineBowlBrocolis, 5f);
+
+        if (zona == ZonaPuzzle.BowlYakisoba && yakisobaCozido && pegouPanelaCozida && !puzzleCompleto)
+            SetOutline(outlinePanela, 5f);
     }
 
     public void SaiuDaZona(ZonaPuzzle zona)
     {
         if (zona == ZonaPuzzle.Panela && !brocolisNaPanela)
             SetOutline(outlineBowlBrocolis, 0f);
+
+        if (zona == ZonaPuzzle.BowlYakisoba && !puzzleCompleto)
+            SetOutline(outlinePanela, 0f);
     }
 
     public void PermaneceuNaZona(ZonaPuzzle zona)
@@ -130,6 +142,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
 
         brocolisNaPanela = true;
         SetOutline(outlineBowlBrocolis, 0f);
+        EsconderConteudoBrocolis();
         Debug.Log("Brocolis derramado na PanelaYakisoba.");
     }
 
@@ -139,8 +152,36 @@ public class YakisobaPuzzleManager : MonoBehaviour
             return;
 
         puzzleCompleto = true;
+        SetOutline(outlinePanela, 0f);
         DestravarPorta();
         Debug.Log("Yakisoba pronto. DoorV6 (1) destrancada.");
+    }
+
+    private void EsconderConteudoBrocolis()
+    {
+        Transform grupoBrocolis = EncontrarFilhoPorNome(bowlBrocolis.transform, "Brocolis");
+        if (grupoBrocolis == null)
+        {
+            Debug.LogWarning("YakisobaPuzzleManager: nao encontrou o filho Brocolis dentro de BowlBrocolis.");
+            return;
+        }
+
+        foreach (Transform filho in grupoBrocolis)
+        {
+            foreach (var renderer in filho.GetComponentsInChildren<Renderer>(true))
+                renderer.enabled = false;
+        }
+    }
+
+    private Transform EncontrarFilhoPorNome(Transform raiz, string nome)
+    {
+        foreach (Transform filho in raiz.GetComponentsInChildren<Transform>(true))
+        {
+            if (filho.name == nome)
+                return filho;
+        }
+
+        return null;
     }
 
     private bool EstaVirado(GameObject obj)
