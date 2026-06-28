@@ -1,5 +1,8 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class YakisobaPuzzleManager : MonoBehaviour
@@ -9,6 +12,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
     private const string BowlYakisobaName = "BowlYakisoba";
     private const string DoorName = "DoorV6 (1)";
     private const string BotaoFogaoName = "Push Button Fogao";
+    private const string MesaPedidoName = "MesaPedido";
     private const string VisualPanelaInicialName = "YakisobaPanelaInicial";
     private const string VisualPanelaComBrocolisName = "YakisobaPanelaComBrocolis";
     private const string VisualBowlFinalName = "YakisobaBowlFinal";
@@ -18,6 +22,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
     [SerializeField] private float tempoCozimento = 10f;
     [SerializeField] private float raioZonaPanela = 0.22f;
     [SerializeField] private float raioZonaBowl = 0.22f;
+    [SerializeField] private float tempoAntesDeEncerrar = 3f;
 
     [Header("Visuais editaveis")]
     [SerializeField] private GameObject yakisobaPanelaInicial;
@@ -33,6 +38,8 @@ public class YakisobaPuzzleManager : MonoBehaviour
     private GameObject panela;
     private GameObject bowlYakisoba;
     private GameObject porta;
+    private GameObject mesaPedido;
+    private GameObject mensagemSucesso;
     private GameObject conteudoPanela;
     private GameObject brocolisNaPanelaVisual;
     private GameObject conteudoBowlYakisoba;
@@ -45,6 +52,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
     private FogaoController fogao;
     private XRGrabInteractable grabBowlBrocolis;
     private XRGrabInteractable grabPanela;
+    private XRGrabInteractable grabBowlYakisoba;
     private XRGrabInteractable grabPorta;
     private Rigidbody rbPorta;
     private RigidbodyConstraints constraintsOriginaisPorta;
@@ -54,6 +62,9 @@ public class YakisobaPuzzleManager : MonoBehaviour
     private bool yakisobaCozido;
     private bool pegouPanelaCozida;
     private bool puzzleCompleto;
+    private bool pedidoEntregue;
+    private bool segurandoBowlYakisoba;
+    private bool bowlYakisobaNaMesaPedido;
     private float tempoLigadoComIngrediente;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -78,6 +89,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
         panela = GameObject.Find(PanelaName);
         bowlYakisoba = GameObject.Find(BowlYakisobaName);
         porta = GameObject.Find(DoorName);
+        mesaPedido = GameObject.Find(MesaPedidoName);
         fogao = BuscarFogao();
 
         if (!ValidarReferencias())
@@ -90,6 +102,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
 
         grabBowlBrocolis = bowlBrocolis.GetComponent<XRGrabInteractable>();
         grabPanela = panela.GetComponent<XRGrabInteractable>();
+        grabBowlYakisoba = bowlYakisoba.GetComponent<XRGrabInteractable>();
         grabPorta = porta.GetComponentInChildren<XRGrabInteractable>(true);
         rbPorta = porta.GetComponentInChildren<Rigidbody>(true);
 
@@ -106,9 +119,17 @@ public class YakisobaPuzzleManager : MonoBehaviour
                 }
             });
 
+        if (grabBowlYakisoba != null)
+        {
+            grabBowlYakisoba.selectEntered.AddListener(_ => segurandoBowlYakisoba = true);
+            grabBowlYakisoba.selectExited.AddListener(_ => TentarEntregarPedidoAposSoltar());
+        }
+
         TravarPorta();
         CriarZonaDerramar(panela, raioZonaPanela, ZonaPuzzle.Panela);
         CriarZonaDerramar(bowlYakisoba, raioZonaBowl, ZonaPuzzle.BowlYakisoba);
+        CriarZonaEntregaPedido();
+        CriarMensagemSucesso();
     }
 
     private void Update()
@@ -177,6 +198,50 @@ public class YakisobaPuzzleManager : MonoBehaviour
         TransferirConteudoParaBowlYakisoba();
         DestravarPorta();
         Debug.Log("Yakisoba pronto. DoorV6 (1) destrancada.");
+    }
+
+    public bool EhBowlYakisoba(Collider outro)
+    {
+        return EhColliderDoObjeto(outro, bowlYakisoba.transform);
+    }
+
+    public void DefinirBowlYakisobaNaMesaPedido(bool estaNaMesa)
+    {
+        bowlYakisobaNaMesaPedido = estaNaMesa;
+    }
+
+    public void TentarEntregarPedidoNaMesa(Collider outro)
+    {
+        if (!EhBowlYakisoba(outro))
+            return;
+
+        TentarEntregarPedidoAposSoltar();
+    }
+
+    private void TentarEntregarPedidoAposSoltar()
+    {
+        segurandoBowlYakisoba = grabBowlYakisoba != null && grabBowlYakisoba.isSelected;
+
+        if (pedidoEntregue || !puzzleCompleto || !bowlYakisobaNaMesaPedido || segurandoBowlYakisoba)
+            return;
+
+        pedidoEntregue = true;
+        Debug.Log("Pedido entregue com sucesso.");
+        StartCoroutine(EncerrarJogo());
+    }
+
+    private IEnumerator EncerrarJogo()
+    {
+        if (mensagemSucesso != null)
+            mensagemSucesso.SetActive(true);
+
+        yield return new WaitForSeconds(tempoAntesDeEncerrar);
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     private void ConfigurarConteudosVisuais()
@@ -452,6 +517,7 @@ public class YakisobaPuzzleManager : MonoBehaviour
         valido &= AvisarSeNulo(panela, PanelaName);
         valido &= AvisarSeNulo(bowlYakisoba, BowlYakisobaName);
         valido &= AvisarSeNulo(porta, DoorName);
+        valido &= AvisarSeNulo(mesaPedido, MesaPedidoName);
         valido &= AvisarSeNulo(fogao, nameof(FogaoController));
         return valido;
     }
@@ -504,6 +570,94 @@ public class YakisobaPuzzleManager : MonoBehaviour
 
         var monitor = zonaObj.AddComponent<YakisobaPourZone>();
         monitor.Configurar(this, zona, zona == ZonaPuzzle.Panela ? bowlBrocolis.transform : panela.transform);
+    }
+
+    private void CriarZonaEntregaPedido()
+    {
+        Bounds bounds = CalcularBounds(mesaPedido);
+        var zonaObj = new GameObject("ZonaEntregaPedido");
+        zonaObj.transform.position = new Vector3(bounds.center.x, bounds.max.y + 0.12f, bounds.center.z);
+        zonaObj.transform.rotation = Quaternion.identity;
+
+        var collider = zonaObj.AddComponent<BoxCollider>();
+        collider.isTrigger = true;
+        collider.size = new Vector3(
+            Mathf.Max(bounds.size.x + 0.25f, 0.6f),
+            0.24f,
+            Mathf.Max(bounds.size.z + 0.25f, 0.6f));
+
+        var monitor = zonaObj.AddComponent<YakisobaDeliveryZone>();
+        monitor.Configurar(this);
+    }
+
+    private Bounds CalcularBounds(GameObject alvo)
+    {
+        var renderers = alvo.GetComponentsInChildren<Renderer>(true);
+        if (renderers.Length == 0)
+            return new Bounds(alvo.transform.position, Vector3.one);
+
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            bounds.Encapsulate(renderers[i].bounds);
+
+        return bounds;
+    }
+
+    private void CriarMensagemSucesso()
+    {
+        Transform cameraTransform = Camera.main != null ? Camera.main.transform : null;
+        if (cameraTransform == null)
+            return;
+
+        var canvasObj = new GameObject("MensagemSucessoPedido");
+        canvasObj.transform.SetParent(cameraTransform, false);
+        canvasObj.transform.localPosition = new Vector3(0f, 0f, 0.55f);
+        canvasObj.transform.localRotation = Quaternion.identity;
+        canvasObj.transform.localScale = Vector3.one * 0.0008f;
+
+        var canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.WorldSpace;
+        canvas.worldCamera = Camera.main;
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 1000;
+        canvasObj.AddComponent<GraphicRaycaster>();
+
+        var rect = canvas.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(900f, 260f);
+
+        var fundoObj = new GameObject("Fundo");
+        fundoObj.transform.SetParent(canvasObj.transform, false);
+        var fundo = fundoObj.AddComponent<Image>();
+        fundo.color = new Color(0.02f, 0.08f, 0.05f, 0.88f);
+        var fundoRect = fundo.GetComponent<RectTransform>();
+        fundoRect.anchorMin = new Vector2(0.5f, 0.5f);
+        fundoRect.anchorMax = new Vector2(0.5f, 0.5f);
+        fundoRect.anchoredPosition = Vector2.zero;
+        fundoRect.sizeDelta = new Vector2(900f, 260f);
+
+        var textoObj = new GameObject("Texto");
+        textoObj.transform.SetParent(canvasObj.transform, false);
+        var texto = textoObj.AddComponent<TextMeshProUGUI>();
+        texto.text = "Pedido entregue!\nYakisoba finalizado com sucesso.";
+        texto.fontSize = 54f;
+        texto.alignment = TextAlignmentOptions.Center;
+        texto.color = Color.white;
+        var textoRect = texto.GetComponent<RectTransform>();
+        textoRect.anchorMin = new Vector2(0.5f, 0.5f);
+        textoRect.anchorMax = new Vector2(0.5f, 0.5f);
+        textoRect.anchoredPosition = Vector2.zero;
+        textoRect.sizeDelta = new Vector2(820f, 200f);
+
+        mensagemSucesso = canvasObj;
+        mensagemSucesso.SetActive(false);
+    }
+
+    private bool EhColliderDoObjeto(Collider collider, Transform objeto)
+    {
+        if (collider == null || objeto == null)
+            return false;
+
+        return collider.transform == objeto || collider.transform.IsChildOf(objeto);
     }
 }
 
@@ -558,5 +712,41 @@ public class YakisobaPourZone : MonoBehaviour
             return false;
 
         return other.transform == objetoEsperado || other.transform.IsChildOf(objetoEsperado);
+    }
+}
+
+public class YakisobaDeliveryZone : MonoBehaviour
+{
+    private YakisobaPuzzleManager manager;
+    private int contatosBowlYakisoba;
+
+    public void Configurar(YakisobaPuzzleManager puzzleManager)
+    {
+        manager = puzzleManager;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!manager.EhBowlYakisoba(other))
+            return;
+
+        contatosBowlYakisoba++;
+        manager.DefinirBowlYakisobaNaMesaPedido(true);
+        manager.TentarEntregarPedidoNaMesa(other);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        manager.TentarEntregarPedidoNaMesa(other);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!manager.EhBowlYakisoba(other))
+            return;
+
+        contatosBowlYakisoba = Mathf.Max(0, contatosBowlYakisoba - 1);
+        if (contatosBowlYakisoba == 0)
+            manager.DefinirBowlYakisobaNaMesaPedido(false);
     }
 }
