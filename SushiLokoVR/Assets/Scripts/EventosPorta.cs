@@ -23,15 +23,6 @@ public class EventosPorta : MonoBehaviour
   teleporte.enabled = true;
  else
   Debug.LogError("EventosPorta: campo 'teleporte' nao esta atribuido no Inspector!");
- } else
- {
- // Porta fechou (voltou para perto de 0)
- if (isOpen && angle > -10)
- {
- isOpen = false;
- if (teleporte != null)
-  teleporte.enabled = false;
  }
- }
- }
+}
 }
