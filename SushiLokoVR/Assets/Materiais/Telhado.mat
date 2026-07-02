@@ -22,7 +22,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Telhado
   m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  m_Parent: {fileID: 2100000, guid: d31d3ca4a1cbe0a4a86e2b70bd64056e, type: 2}
+  m_Parent: {fileID: 2100000, guid: 3ce306f65c845b24aab56d1c76ed66bd, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
